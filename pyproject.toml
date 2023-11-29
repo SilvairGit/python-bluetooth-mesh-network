@@ -19,7 +19,7 @@ dependencies = [
     "bluetooth-mesh-messages>=0.9",
     "construct>=2.9.45,<2.9.46",
     'crc==0.3.0',
-    'cryptography>=2.3.1,<3.4',
+    'cryptography>=2.3.1',
     'ecdsa==0.15',
 ]
 classifiers = [
