@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bluetooth-mesh-network"
-version = "0.9.2"
+version = "0.9.3"
 readme = "README.rst"
 authors = [
     { name = "Michał Lowas-Rzechonek", email = "michal.lowas-rzechonek@silvair.com" },
@@ -20,7 +20,7 @@ dependencies = [
     "construct>=2.9.45,<2.9.46",
     'crc==0.3.0',
     'cryptography>=2.3.1',
-    'ecdsa==0.15',
+    'ecdsa==0.18.0',
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
