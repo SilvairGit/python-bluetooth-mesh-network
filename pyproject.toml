@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bluetooth-mesh-network"
-version = "0.9.4"
+version = "0.9.5"
 readme = "README.rst"
 authors = [
     { name = "Michał Lowas-Rzechonek", email = "michal.lowas-rzechonek@silvair.com" },
@@ -12,11 +12,12 @@ authors = [
     { name = "Jakub Witowski", email = "jakub.witowski@silvair.com" },
     { name = "Kamil Janowski", email = "kamil.janowski@silvair.com" },
     { name = "Przemysław Fierek", email = "przemyslaw.fierek@silvair.com" },
-    { name = "Rafał Gajda", email = "rafal.gajda@silvair.com" }
+    { name = "Rafał Gajda", email = "rafal.gajda@silvair.com" },
+    { name = "Patryk Bieleń", email = "patryk.bielen@silvair.com" }
 ]
 dependencies = [
     'bitstring>=3.1.5,<4.0.0',
-    "bluetooth-mesh-messages>=0.9",
+    "bluetooth-mesh-messages>=0.9,<0.10",
     "construct>=2.9.45,<2.9.46",
     'crc==0.3.0',
     'cryptography>=2.3.1',
