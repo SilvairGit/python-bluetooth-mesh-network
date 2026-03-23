@@ -24,18 +24,18 @@ from pytest import fixture
 from bluetooth_mesh.network.crypto import ApplicationKey, DeviceKey, NetworkKey
 
 
-@fixture
-def app_key():
+@fixture(name="app_key")
+def fixture_app_key():
     return ApplicationKey(bytes.fromhex("63964771734fbd76e3b40519d1d94a48"))
 
 
-@fixture
-def net_key():
+@fixture(name="net_key")
+def fixture_net_key():
     return NetworkKey(bytes.fromhex("7dd7364cd842ad18c17c2b820c84c3d6"))
 
 
-@fixture
-def dev_key():
+@fixture(name="dev_key")
+def fixture_dev_key():
     return DeviceKey(bytes.fromhex("9d6dd0e96eb25dc19a40ed9914f8f03f"))
 
 
