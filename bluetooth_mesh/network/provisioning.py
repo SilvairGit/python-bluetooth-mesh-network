@@ -19,7 +19,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 #
-# pylint: disable=W0223
 
 import enum
 import struct
@@ -42,8 +41,8 @@ from construct import (
     this,
 )
 
-from bluetooth_mesh.network.crypto import aes_ccm_decrypt, aes_ccm_encrypt, aes_cmac, k1, s1
 from bluetooth_mesh.messages.util import BitList, EmbeddedBitStruct, EnumAdapter
+from bluetooth_mesh.network.crypto import aes_ccm_decrypt, aes_ccm_encrypt, aes_cmac, k1, s1
 
 
 class BearerOpcode(enum.IntEnum):
@@ -126,16 +125,18 @@ class LinkCloseReason(enum.IntEnum):
 
 
 class ProvisioningPublicKeyAdapter(Adapter):
-    def _decode(self, obj, content, path):
+    def _decode(self, obj, _content, _path):
         value = obj["x"] + obj["y"]
         return ecdsa.VerifyingKey.from_string(value, curve=ecdsa.NIST256p)
 
-    def _encode(self, obj, content, path):
+    def _encode(self, obj, _content, _path):
         value = obj.to_string()
-        return dict(x=value[:32], y=value[32:])
+        return {
+            "x": value[:32],
+            "y": value[32:],
+        }
 
 
-# fmt: off
 ProvisioningInvite = Struct(
     "attention" / Int8ub,
 )
@@ -153,11 +154,15 @@ ProvisioningCapabilities = Struct(
 
 ProvisioningStart = Struct(
     "algorithm" / EnumAdapter(Int8ub, ProvisioningAlgorithm),
-    "public_key" / ExprAdapter(Int8ub,
-                               lambda obj, ctx: bool(obj),
-                               lambda obj, ctx: 1 if obj else 0),
+    "public_key"
+    / ExprAdapter(
+        Int8ub,
+        lambda obj, ctx: bool(obj),
+        lambda obj, ctx: 1 if obj else 0,
+    ),
     "authentication_method" / EnumAdapter(Int8ub, ProvisioningAuthenticationMethod),
-    "authentication_action" / Switch(
+    "authentication_action"
+    / Switch(
         this.authentication_method,
         {
             ProvisioningAuthenticationMethod.NONE: Const(0, Int8ub),
@@ -166,7 +171,8 @@ ProvisioningStart = Struct(
             ProvisioningAuthenticationMethod.INPUT: EnumAdapter(Int8ub, ProvisioningInputOOBAction),
         },
     ),
-    "authentication_size" / Switch(
+    "authentication_size"
+    / Switch(
         this.authentication_method,
         {
             ProvisioningAuthenticationMethod.NONE: Const(0, Int8ub),
@@ -178,7 +184,8 @@ ProvisioningStart = Struct(
 )
 
 ProvisioningPublicKey = Struct(
-    "key" / ProvisioningPublicKeyAdapter(
+    "key"
+    / ProvisioningPublicKeyAdapter(
         Struct(
             "x" / Bytes(32),
             "y" / Bytes(32),
@@ -209,11 +216,10 @@ ProvisioningPayload = Struct(
     "unicast_address" / Int16ub,
 )
 
-ProvisioningComplete = Struct(
-)
+ProvisioningComplete = Struct()
 
 ProvisioningFailed = Struct(
-    "error_code" / EnumAdapter(Int8ub, ProvisioningErrorCode)
+    "error_code" / EnumAdapter(Int8ub, ProvisioningErrorCode),
 )
 
 ProvisioningPDU = Struct(
@@ -222,7 +228,8 @@ ProvisioningPDU = Struct(
         Padding(2),
         "type" / EnumAdapter(BitsInteger(6), ProvisioningPDUType),
     ),
-    "parameters" / Switch(
+    "parameters"
+    / Switch(
         this.type,
         {
             ProvisioningPDUType.INVITE: ProvisioningInvite,
@@ -241,11 +248,11 @@ ProvisioningPDU = Struct(
 )
 
 LinkOpen = Struct(
-    "device_uuid" / Bytes(16)
+    "device_uuid" / Bytes(16),
 )
 
 LinkClose = Struct(
-    "reason" / EnumAdapter(Int8ub, LinkCloseReason)
+    "reason" / EnumAdapter(Int8ub, LinkCloseReason),
 )
 
 ProvisioningBearerControl = Struct(
@@ -254,12 +261,13 @@ ProvisioningBearerControl = Struct(
         "opcode" / EnumAdapter(BitsInteger(6), BearerOpcode),
         "gpcf" / Const(GenericProvisioningPDUType.CONTROL, BitsInteger(2)),
     ),
-    "parameters" / Switch(
+    "parameters"
+    / Switch(
         this.opcode,
         {
             BearerOpcode.LINK_OPEN: Struct("device_uuid" / Bytes(16)),
             BearerOpcode.LINK_ACK: Struct(),
-            BearerOpcode.LINK_CLOSE: Struct("reason" / EnumAdapter(Int8ub, LinkCloseReason))
+            BearerOpcode.LINK_CLOSE: Struct("reason" / EnumAdapter(Int8ub, LinkCloseReason)),
         },
         default=GreedyBytes,
     ),
@@ -273,7 +281,7 @@ TransactionStart = Struct(
     ),
     "total_length" / Int16ub,
     "frame_check" / Int8ub,
-    "data" / GreedyBytes
+    "data" / GreedyBytes,
 )
 
 TransactionAck = Struct(
@@ -290,7 +298,7 @@ TransactionContinuation = Struct(
         "segment_index" / BitsInteger(6),
         "gpcf" / Const(GenericProvisioningPDUType.CONTINUATION, BitsInteger(2)),
     ),
-    "data" / GreedyBytes
+    "data" / GreedyBytes,
 )
 
 GenericProvisioning = Select(
@@ -303,9 +311,8 @@ GenericProvisioning = Select(
 PBADVPDU = Struct(
     "link_id" / Bytes(4),
     "transaction_id" / Int8ub,
-    "data" / GreedyBytes
+    "data" / GreedyBytes,
 )
-# fmt: on
 
 
 class ProvisioningEncryption:
@@ -327,9 +334,7 @@ class ProvisioningEncryption:
 
         return (
             provisioning_salt,
-            aes_ccm_decrypt(
-                provisioning_key, provisioning_nonce, data + mic, tag_length=8
-            ),
+            aes_ccm_decrypt(provisioning_key, provisioning_nonce, data + mic, tag_length=8),
         )
 
     @staticmethod
@@ -338,7 +343,13 @@ class ProvisioningEncryption:
 
     @staticmethod
     def confirmation_encrypt(secret, inputs, random, auth=None):
-        """inputs = invite(attention) + capabilities(without opcode) + start(msg) + provisioner_key + device_key"""
+        """
+        inputs =    invite(attention)
+                    + capabilities(without opcode)
+                    + start(msg)
+                    + provisioner_key
+                    + device_key
+        """
         confirmation_salt = s1(inputs)
         confirmation_key = k1(secret, confirmation_salt, b"prck")
 
@@ -350,6 +361,4 @@ class ProvisioningEncryption:
 
     @staticmethod
     def confirmation_validate(confirmation_key, confirmation, random, auth=None):
-        return confirmation == aes_cmac(
-            confirmation_key, random + struct.pack("16s", auth or b"")
-        )
+        return confirmation == aes_cmac(confirmation_key, random + struct.pack("16s", auth or b""))
