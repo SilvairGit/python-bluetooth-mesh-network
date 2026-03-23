@@ -72,7 +72,7 @@ def k2(N, P):
 
     k = (T1 + T2 + T3)[-33:]
 
-    n, e, p = bitstring.BitString(k).unpack("pad:1, uint:7, bits:128, bits:128")
+    n, e, p = bitstring.BitStream(k).unpack("pad:1, uint:7, bits:128, bits:128")
 
     return n, e.bytes, p.bytes
 
@@ -89,7 +89,7 @@ def k4(N):
 
     k = aes_cmac(T, b"id6\x01")[-1:]
 
-    (aid,) = bitstring.BitString(k).unpack("pad:2, uint:6")
+    (aid,) = bitstring.BitStream(k).unpack("pad:2, uint:6")
 
     return aid
 

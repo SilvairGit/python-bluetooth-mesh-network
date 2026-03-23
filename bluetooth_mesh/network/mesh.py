@@ -27,7 +27,7 @@ from uuid import UUID
 
 import bitstring
 from construct import ValidationError
-from crc.crc import Configuration, CrcCalculator
+from crc import Configuration, Calculator
 
 from bluetooth_mesh.network.crypto import (
     ApplicationKey,
@@ -71,7 +71,7 @@ class UnprovisionedDeviceBeacon:
 
     @classmethod
     def unpack(cls, beacon):
-        uuid, oob, uri_hash = bitstring.BitString(beacon).unpack(cls.BEACON_FORMAT)
+        uuid, oob, uri_hash = bitstring.BitStream(beacon).unpack(cls.BEACON_FORMAT)
 
         if uri_hash and len(uri_hash) != 4:
             raise ValueError("Wrong size of URI hash, expected 4 bytes")
@@ -111,7 +111,7 @@ class SecureNetworkBeacon:
             message[-cls.BEACON_AUTH_SIZE :],
         )
 
-        iv_update, key_refresh, network_id, iv_index = bitstring.BitString(
+        iv_update, key_refresh, network_id, iv_index = bitstring.BitStream(
             beacon
         ).unpack(cls.BEACON_FORMAT)
 
@@ -165,7 +165,7 @@ class MeshPrivateBeacon:
 
         private_beacon_data = bytes(map(operator.xor, s[:5], obfuscated_private_beacon_data))
 
-        iv_update, key_refresh, iv_index = bitstring.BitString(
+        iv_update, key_refresh, iv_index = bitstring.BitStream(
             private_beacon_data
         ).unpack(cls.BEACON_FORMAT)
 
@@ -350,7 +350,7 @@ class AccessMessage(Segment):
 
     @classmethod
     def decrypt(cls, app_key, iv_index, ctl, ttl, seq, src, dst, transport_pdu):
-        seg, akf, aid = bitstring.BitString(transport_pdu).unpack(
+        seg, akf, aid = bitstring.BitStream(transport_pdu).unpack(
             "uint:1, uint:1, uint:6"
         )
 
@@ -389,7 +389,7 @@ class ControlMessage(Segment):
 
     @classmethod
     def decrypt(cls, ttl, src, dst, transport_pdu):
-        seg, opcode = bitstring.BitString(transport_pdu).unpack("uint:1, uint:7")
+        seg, opcode = bitstring.BitStream(transport_pdu).unpack("uint:1, uint:7")
 
         # works only for unsegmented messages!
         if seg:
@@ -424,7 +424,7 @@ class SolicitationMessage(Segment):
         self.opcode = bytes()
 
     def get_opcode(self, application_key):
-        return bitstring.BitString()
+        return bitstring.BitStream()
 
     def segments(self, application_key, seq, iv_index, szmic=False, seg=False):
         yield bytes()
@@ -531,7 +531,7 @@ class NetworkMessage:
     ):
         # pylint: disable=R0914
         _nid, encryption_key, privacy_key = net_key.encryption_keys
-        last_iv, nid, obfuscated_header, encoded_data_mic = bitstring.BitString(
+        last_iv, nid, obfuscated_header, encoded_data_mic = bitstring.BitStream(
             network_pdu
         ).unpack("uint:1, uint:7, bytes:6, bytes")
         if nid != _nid:
@@ -545,7 +545,7 @@ class NetworkMessage:
 
         pecb = aes_ecb(privacy_key, privacy_random)[:6]
         deobfuscated = bytes(map(operator.xor, obfuscated_header, pecb))
-        ctl, ttl, seq, src = bitstring.BitString(deobfuscated).unpack(
+        ctl, ttl, seq, src = bitstring.BitStream(deobfuscated).unpack(
             "uint:1, uint:7, uintbe:24, uintbe:16"
         )
         net_mic_len = 8 if ctl else 4
@@ -557,7 +557,7 @@ class NetworkMessage:
             encryption_key, nonce, encoded_data_mic, tag_length=net_mic_len
         )
 
-        dst, transport_pdu = bitstring.BitString(decrypted_net).unpack(
+        dst, transport_pdu = bitstring.BitStream(decrypted_net).unpack(
             "uintbe:16, bytes"
         )
 
@@ -582,7 +582,7 @@ MESH_CRC = Configuration(
     reverse_output=True,
 )
 
-CRC_CALCULATOR = CrcCalculator(configuration=MESH_CRC)
+CRC_CALCULATOR = Calculator(configuration=MESH_CRC)
 
 
 class ProvisioningTransaction:
@@ -598,7 +598,7 @@ class ProvisioningTransaction:
             segments += [pdu[0 + i : 23 + i] for i in range(20, len(pdu), 23)]
 
         total_len = len(pdu)
-        fcs = CRC_CALCULATOR.calculate_checksum(pdu)
+        fcs = CRC_CALCULATOR.checksum(pdu)
 
         yield GenericProvisioning.build(
             dict(
@@ -650,7 +650,7 @@ class ProvisioningTransaction:
 
         pdu = start.data + b"".join(continuation.data for continuation in continuations)
 
-        fcs = CRC_CALCULATOR.calculate_checksum(pdu)
+        fcs = CRC_CALCULATOR.checksum(pdu)
         if start.total_length != len(pdu) or fcs != start.frame_check:
             raise ValidationError(
                 f"Transaction checksum is invalid, expected {start.frame_check:02x}, got {fcs:02x}",
