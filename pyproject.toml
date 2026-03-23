@@ -55,6 +55,7 @@ target-version = ["py314"]
 profile = "black"
 line_length = 110
 combine_as_imports = true
+known_first_party = ["bluetooth_mesh"]
 
 [tool.pylint."messages control"]
 disable = [
@@ -62,10 +63,16 @@ disable = [
     "missing-class-docstring",
     "missing-function-docstring",
     "invalid-name",
+    "unbalanced-tuple-unpacking",
+    "too-few-public-methods",
 ]
 enable = [
     "useless-suppression",
 ]
+
+[tool.pylint.design]
+max-args = 8
+max-positional-arguments = 9
 
 [tool.pylint.main]
 py-version = "3.14"

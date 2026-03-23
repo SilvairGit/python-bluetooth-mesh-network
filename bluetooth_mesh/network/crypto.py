@@ -20,8 +20,6 @@
 #
 #
 
-# pylint: disable=C0103
-
 from functools import lru_cache
 
 import bitstring
@@ -99,7 +97,7 @@ class Key:
         self.bytes = key
 
     def __str__(self):
-        return "<%s: %s>" % (type(self).__name__, self.bytes.hex())
+        return f"<{type(self).__name__}: {self.bytes.hex()}>"
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.bytes == other.bytes
