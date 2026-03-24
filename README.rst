@@ -27,17 +27,34 @@ https://www.bluetooth.com/specifications/mesh-specifications
 Supported features include:
 
 - **Cryptography**: AES-CCM encryption/decryption, AES-CMAC, AES-ECB,
-  key derivation functions (network key, application key, device key)
-- **Network layer**: Network PDU encoding/decoding, beacon parsing
-  (Unprovisioned Device, Secure Network, Private Mesh)
-- **Provisioning**: Generic Provisioning PDU support
+  salt and key derivation helpers (`s1`, `k1`, `k2`, `k3`, `k4`), and
+  key wrappers for application, device, and network keys
+- **Mesh message handling**: network PDU packing/unpacking for access,
+  control, proxy configuration, and proxy solicitation messages, plus
+  nonce helpers and segmented access message packing
+- **Beacons**: unprovisioned device, secure network, and private mesh
+  beacon parsing/packing
+- **Provisioning**: provisioning PDU parsing/building, provisioning
+  bearer control and generic provisioning transaction handling, and
+  provisioning encryption/decryption helpers
 
 Installation
 ------------
 
+This project requires Python 3.14.
+
 You can install "bluetooth-mesh-network" via `pip`_ from `PyPI`_::
 
     $ pip install bluetooth-mesh-network
+
+You can also add it to a Poetry-managed project::
+
+    $ poetry add bluetooth-mesh-network
+
+If you want to work on this repository locally, install the project and development
+dependencies with Poetry::
+
+    $ poetry install
 
 Contributing
 ------------
