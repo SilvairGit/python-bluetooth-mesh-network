@@ -19,12 +19,12 @@ authors = [
     { name = "Patryk Bieleń", email = "patryk.bielen@silvair.com" }
 ]
 dependencies = [
-    "bitstring>=4.4.0,<4.5",
-    "bluetooth-mesh-messages>=1.0.0,<1.1",
-    "construct>=2.10.70,<2.11",
-    "crc>=7.1.0,<7.2",
-    "cryptography>=46.0.5,<46.1",
-    "ecdsa>=0.19.1,<0.20",
+    "bitstring >= 4.4.0",
+    "bluetooth-mesh-messages >= 1.0.1, <2",
+    "construct >= 2.10.70",
+    "crc >= 7.1.0",
+    "cryptography >= 46.0.5",
+    "ecdsa >= 0.19.1",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
